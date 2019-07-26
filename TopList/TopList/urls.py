@@ -5,5 +5,6 @@ from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token, obtain
 
 urlpatterns = [
     path('api/auth/', include('authentication.urls')),
+    path('api', include('user.urls')),
     path('admin/', admin.site.urls)
 ]

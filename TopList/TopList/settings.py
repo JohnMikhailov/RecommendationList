@@ -33,8 +33,6 @@ INSTALLED_APPS = [
     'authentication',
 ]
 
-# AUTH_USER_MODEL = 'user.CustomUser'
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -68,35 +66,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TopList.wsgi.application'
 
 REST_FRAMEWORK = {
-    ''
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        # TODO: check backend import
+        'authentication.backend.JWTAuth',
     ),
 }
 
-# JWT_AUTH = {
-#     # If the secret is wrong, it will raise a jwt.DecodeError telling you as such. You can still get at the payload by setting the JWT_VERIFY to False.
-#     'JWT_VERIFY': True,
-#
-#     # You can turn off expiration time verification by setting JWT_VERIFY_EXPIRATION to False.
-#     # If set to False, JWTs will last forever meaning a leaked token could be used by an attacker indefinitely.
-#     'JWT_VERIFY_EXPIRATION': True,
-#
-#     # This is an instance of Python's datetime.timedelta. This will be added to datetime.utcnow() to set the expiration time.
-#     # Default is datetime.timedelta(seconds=300)(5 minutes).
-#     'JWT_EXPIRATION_DELTA': timedelta(hours=1),
-#
-#     'JWT_ALLOW_REFRESH': True,
-#     'JWT_AUTH_HEADER_PREFIX': 'JWT',
-# }
-
-JWT_ACCESS_TTL = 20 * 60
+JWT_ACCESS_TTL = 10
 JWT_REFRESH_TTL = 14 * 24 * 60 * 60 * 60
 
 # Database

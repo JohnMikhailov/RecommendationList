@@ -42,21 +42,15 @@ def login(request):
     if not check_password(password, user.password):
         raise AuthenticationFailed()
 
-    access_token = jwt.encode({
-        'type': 'access',
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'exp': datetime.now() + timedelta(seconds=settings.JWT_ACCESS_TTL)
-    }, settings.SECRET_KEY, algorithm='HS256')
+    access_token = create_token({'id': user.id,
+                                 'username': user.username,
+                                 'email': user.email},
+                                token_type='access')
 
-    refresh_token = jwt.encode({
-        'type': 'refresh',
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'exp': datetime.now() + timedelta(seconds=settings.JWT_REFRESH_TTL)
-    }, settings.SECRET_KEY, algorithm='HS256')
+    refresh_token = create_token({'id': user.id,
+                                  'username': user.username,
+                                  'email': user.email},
+                                 token_type='refresh')
 
     user.refresh_token = refresh_token
     user.save()
