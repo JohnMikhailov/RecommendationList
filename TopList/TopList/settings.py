@@ -81,8 +81,12 @@ JWT_REFRESH_TTL = 14 * 24 * 60 * 60 * 60
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'toplist_db',
+        'USER': 'toplist_user',
+        'PASSWORD': 'toplist_password',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
