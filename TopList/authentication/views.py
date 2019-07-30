@@ -1,11 +1,8 @@
 import jwt
 
-from datetime import datetime, timedelta
-
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
-from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -42,15 +39,9 @@ def login(request):
     if not check_password(password, user.password):
         raise AuthenticationFailed()
 
-    access_token = create_token({'id': user.id,
-                                 'username': user.username,
-                                 'email': user.email},
-                                token_type='access')
-
-    refresh_token = create_token({'id': user.id,
-                                  'username': user.username,
-                                  'email': user.email},
-                                 token_type='refresh')
+    payload = {'id': user.id, 'email': user.email}
+    access_token = create_token(payload, token_type='access')
+    refresh_token = create_token(payload, token_type='refresh')
 
     user.refresh_token = refresh_token
     user.save()
@@ -58,6 +49,7 @@ def login(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def refresh(request):
     credentials = request.data
     refresh_token_credentials = credentials.get('refresh_token', None)
@@ -68,9 +60,9 @@ def refresh(request):
     except jwt.InvalidTokenError:
         raise AuthenticationFailed('Invalid token header')
 
-    username = payload.get('username', None)
+    id_ = payload.get('id', None)
 
-    user = CustomUser.objects.get(username=username)
+    user = CustomUser.objects.get(pk=id_)
     if not user:
         raise AuthenticationFailed('User not found')
 
@@ -78,15 +70,9 @@ def refresh(request):
     if refresh_token != refresh_token_credentials:
         raise AuthenticationFailed('Token not match')
 
-    access_token = create_token({'id': user.id,
-                                 'username': user.username,
-                                 'email': user.email},
-                                token_type='access')
-
-    refresh_token = create_token({'id': user.id,
-                                  'username': user.username,
-                                  'email': user.email},
-                                 token_type='refresh')
+    payload = {'id': user.id, 'email': user.email}
+    access_token = create_token(payload, token_type='access')
+    refresh_token = create_token(payload, token_type='refresh')
 
     user.refresh_token = refresh_token
     user.save()

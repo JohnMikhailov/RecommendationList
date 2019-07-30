@@ -1,13 +1,14 @@
-from django.conf.urls import url
-from django.urls import include
+from django.conf.urls.static import static
+from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from authentication import views
+from TopList import settings
 from user.views import UserViewSet
 
+# DefaultRouter()?
 router = SimpleRouter()
-router.register('users', UserViewSet, basename='users')
+router.register('', UserViewSet, basename='users')
 
 urlpatterns = [
-    url('/', include(router.urls))
+    path('users/', include(router.urls))
 ]

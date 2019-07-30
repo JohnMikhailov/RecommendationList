@@ -43,9 +43,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-AUTHENTICATION_BACKEND = ('authentication.backend',)
+# AUTHENTICATION_BACKEND = ('authentication.backend',)
 
 ROOT_URLCONF = 'TopList.urls'
+
 
 TEMPLATES = [
     {
@@ -67,14 +68,15 @@ WSGI_APPLICATION = 'TopList.wsgi.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'authentication.backend.JWTAuth',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
-JWT_ACCESS_TTL = 10
-JWT_REFRESH_TTL = 14 * 24 * 60 * 60 * 60
+JWT_ACCESS_TTL = 10 * 60 * 6 * 12
+JWT_REFRESH_TTL = 14 * 24 * 60 * 60
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -128,3 +130,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
