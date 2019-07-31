@@ -1,10 +1,8 @@
-import time
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from authentication.utils import create_token
-from authentication.views import registration, login, refresh
 from user.models import CustomUser
 
 

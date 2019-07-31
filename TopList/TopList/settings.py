@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
     'user',
     'authentication',
+    'social'
 ]
 
 MIDDLEWARE = [

@@ -94,7 +94,8 @@ class CustomUserTest(APITestCase):
         }
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.patch(url, data, foramt='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.test_user_1.email, response.data['email'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_can_change_own_avatar(self):
         user_id = self.test_user_1.id

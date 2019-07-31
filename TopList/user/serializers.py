@@ -12,7 +12,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'first_name', 'last_name', 'username', 'password', 'is_active', 'avatar')
+        fields = ('id',
+                  'email',
+                  'first_name',
+                  'last_name', 'username', 'password',
+                  'is_active',
+                  'avatar')
         read_only_fields = ('id', 'refresh_token')
         extra_kwargs = {'username': {'required': True},
                         'first_name': {'required': True},
@@ -25,8 +30,8 @@ class CustomUserSerializerUpdate(CustomUserSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'first_name', 'last_name', 'username', 'password', 'is_active', 'avatar')
-        read_only_fields = ('id', 'email', 'refresh_token')
+        fields = CustomUserSerializer.Meta.fields
+        read_only_fields = CustomUserSerializer.Meta.read_only_fields + ('email',)
         extra_kwargs = {'username': {'required': True},
                         'first_name': {'required': True},
                         'last_name': {'required': True},
