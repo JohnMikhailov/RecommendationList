@@ -19,3 +19,15 @@ class CustomUserSerializer(serializers.ModelSerializer):
                         'last_name': {'required': True},
                         'email': {'required': True},
                         'avatar': {'required': False}}
+
+
+class CustomUserSerializerUpdate(CustomUserSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'email', 'first_name', 'last_name', 'username', 'password', 'is_active', 'avatar')
+        read_only_fields = ('id', 'email', 'refresh_token')
+        extra_kwargs = {'username': {'required': True},
+                        'first_name': {'required': True},
+                        'last_name': {'required': True},
+                        'avatar': {'required': False}}

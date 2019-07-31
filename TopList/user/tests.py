@@ -1,5 +1,3 @@
-import os
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -79,7 +77,7 @@ class CustomUserTest(APITestCase):
 
     def test_do_not_allow_to_user_delete_any_user(self):
         user_id = self.test_user_1.id
-        url = reverse('users-detail', kwargs={'pk': user_id})
+        url = reverse('users-detail', kwargs={'pk': user_id + 1})
         access_token = create_token({'id': user_id,
                                      'email': 'email@mail.com'}, 'access')
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
@@ -111,7 +109,7 @@ class CustomUserTest(APITestCase):
         response = self.client.patch(url, data, foramt='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_user_trying_send_text(self):
+    def test_user_trying_send_text_instead_of_image(self):
         user_id = self.test_user_1.id
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
