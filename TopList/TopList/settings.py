@@ -31,7 +31,7 @@ INSTALLED_APPS = [
 
     'user',
     'authentication',
-    'social'
+    'recommendation_list',
 ]
 
 MIDDLEWARE = [
@@ -68,11 +68,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TopList.wsgi.application'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'authentication.backend.JWTAuth',
-    ),
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
     ]
 }
 
