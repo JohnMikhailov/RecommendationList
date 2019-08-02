@@ -1,14 +1,12 @@
-from django.shortcuts import render
-
-
-# Create your views here.
-from rest_framework import permissions
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from user.models import CustomUser
+from user.serializers import CustomUserSerializerUpdate
+from user.permissions import IsOwnerOrReadOnly
 
 
 class UserViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def list(self, request, *args, **kwargs):
-        return Response('hello', 200)
+    permission_classes = [IsOwnerOrReadOnly]
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializerUpdate
+    http_method_names = ['get', 'patch', 'head', 'options']

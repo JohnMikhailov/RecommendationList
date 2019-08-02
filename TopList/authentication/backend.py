@@ -1,17 +1,21 @@
 import jwt
-from rest_framework.authentication import get_authorization_header
+from rest_framework.authentication import get_authorization_header, BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
 from TopList import settings
 from user.models import CustomUser
 
 
-class JWTAuth(object):
+class JWTAuth(BaseAuthentication):
 
     def authenticate(self, request):
-        auth = get_authorization_header(request).decode('utf-8').split()
+        header = get_authorization_header(request)
+        if not header:
+            return None
 
-        if not auth or auth[0].lower() != 'jwt':
+        auth = header.decode('utf-8').split()
+
+        if auth[0].lower() != 'jwt':
             raise AuthenticationFailed()
 
         try:
@@ -23,9 +27,9 @@ class JWTAuth(object):
         return self.authenticate_credentials(payload)
 
     def authenticate_credentials(self, payload):
-        username = payload.get('username', None)
+        id_ = payload.get('id', None)
         try:
-            user = CustomUser.objects.get(username=username)
+            user = CustomUser.objects.get(pk=id_)
         except CustomUser.DoesNotExist as exc:
             raise AuthenticationFailed(str(exc))
 
@@ -33,3 +37,6 @@ class JWTAuth(object):
             raise AuthenticationFailed('User is inactive or deleted')
 
         return user, payload
+
+    def authenticate_header(self, request):
+        return 'jwt'
