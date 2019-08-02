@@ -1,15 +1,29 @@
 from django.db import models
 from user.models import CustomUser
 
+from enum import Enum
+from django_enum_choices.fields import EnumChoiceField
+
+
+class CategoryEnum(Enum):
+    MOVIES = 'Movies'
+    BOOKS = 'Books'
+    RELAX = 'Relax'
+    KNOWLEDGE = 'Knowledge'
+    MUSIC = 'Music'
+    GAMES = 'Games'
+    FREE = 'Free theme'
+
 
 class RecommendationList(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='lists', on_delete=models.CASCADE, null=True)
+
+    user = models.ForeignKey(CustomUser, related_name='lists', on_delete=models.CASCADE, null=False)
 
     is_draft = models.BooleanField(default=False)
 
     photo = models.ImageField(null=True)
 
-    category = models.CharField(max_length=500, default='')
+    category = EnumChoiceField(CategoryEnum)
     header = models.CharField(max_length=500, default='')
 
 
