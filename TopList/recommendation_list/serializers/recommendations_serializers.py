@@ -1,4 +1,4 @@
-from rest_framework import serializers, fields
+from rest_framework import serializers
 
 from recommendation_list.models.recommendations import RecommendationList, Favorites, Recommendation, CategoryEnum
 from user.serializers import CustomUserSerializer

@@ -6,13 +6,13 @@ from django_enum_choices.fields import EnumChoiceField
 
 
 class CategoryEnum(Enum):
-    MOVIES = 'Movies'
-    BOOKS = 'Books'
-    RELAX = 'Relax'
-    KNOWLEDGE = 'Knowledge'
-    MUSIC = 'Music'
-    GAMES = 'Games'
-    FREE = 'Free theme'
+    MOVIES = 'movies'
+    BOOKS = 'books'
+    RELAX = 'relax'
+    KNOWLEDGE = 'knowledge'
+    MUSIC = 'music'
+    GAMES = 'games'
+    FREE = 'free theme'
 
 
 class RecommendationList(models.Model):

@@ -4,12 +4,11 @@ from django_enum_choices.filters import EnumChoiceFilter, EnumChoiceFilterSetMix
 from recommendation_list.models.recommendations import CategoryEnum, RecommendationList
 
 
-def custom_choice_builder(choice):
-    return choice.value.lower(), choice.value
+from recommendation_list.models.tags import Tag
 
 
-class CategoryFilter(django_filters.FilterSet):
-    category = EnumChoiceFilter(CategoryEnum, choice_builder=custom_choice_builder)
+class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
+    category = EnumChoiceFilter(CategoryEnum)
 
     class Meta:
         model = RecommendationList
