@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from recommendation_list.models.tags import TagList, Tag
-from recommendation_list.serializers.recommendations_serializers import RecommendationListSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -12,7 +11,6 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class TagListSerializer(serializers.ModelSerializer):
-    recommendation_list = RecommendationListSerializer(many=True)
 
     class Meta:
         model = TagList

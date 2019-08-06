@@ -144,3 +144,27 @@ class RecommendationListTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_trying_update_foreign_list(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id})
+        data = {
+            'is_draft': 'true'
+        }
+        access_token = create_token({'id': self.test_user_2.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_can_change_recommendation_list_photo(self):
+        user_id = self.test_user_1.id
+        url = reverse('users-detail', kwargs={'pk': user_id})
+        access_token = create_token({'id': user_id,
+                                     'email': 'emial@mail.com'}, 'access')
+        im = open('./media/recommendation_list_images/im2.jpg', 'rb')
+        data = {
+            'photo': im
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.patch(url, data, foramt='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

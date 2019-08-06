@@ -8,5 +8,5 @@ class Tag(models.Model):
 
 
 class TagList(models.Model):
-    recommendation_list = models.ForeignKey(RecommendationList, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    recommendation_list = models.ForeignKey(RecommendationList, on_delete=models.CASCADE, related_name='tags')
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name='recommendations')

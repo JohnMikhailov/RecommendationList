@@ -21,7 +21,7 @@ class RecommendationList(models.Model):
 
     is_draft = models.BooleanField(default=False)
 
-    photo = models.ImageField(null=True)
+    photo = models.ImageField(upload_to='recommendation_list_images', null=True)
 
     category = EnumChoiceField(CategoryEnum)
     header = models.CharField(max_length=500, default='')
@@ -38,3 +38,5 @@ class Recommendation(models.Model):
                                             on_delete=models.CASCADE)
 
     text = models.CharField(max_length=1000, default='')
+
+    # TODO добавить поле photo

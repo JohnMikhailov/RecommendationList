@@ -19,7 +19,7 @@ class RecommendationListViewSet(ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     filterset_class = CustomRecommendationListFieldsFilter
 
-    @transaction.atomic
+    # @transaction.atomic
     def create(self, request, *args, **kwargs):
         request.data['user'] = request.user
         return super().create(request, *args, **kwargs)
@@ -27,6 +27,13 @@ class RecommendationListViewSet(ModelViewSet):
     @action(methods=['GET'], detail=False)
     def categories(self, request):
         return Response([elem.value for elem in CategoryEnum])
+
+
+class TagViewSet(ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_class = CustomTagFilter
 
 
 class FavoritesViewSet(ModelViewSet):

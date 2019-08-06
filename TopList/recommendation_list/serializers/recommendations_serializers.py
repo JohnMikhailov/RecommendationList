@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from recommendation_list.models.recommendations import RecommendationList, Favorites, Recommendation, CategoryEnum
+from recommendation_list.models.tags import Tag, TagList
+from recommendation_list.serializers.tags_serializers import TagSerializer, TagListSerializer
 from user.serializers import CustomUserSerializer
 from django_enum_choices.serializers import EnumChoiceField
 
@@ -22,16 +24,25 @@ class RecommendationListSerializer(serializers.ModelSerializer):
     recommendations = RecommendationSerializer(many=True)
     user = RelatedCustomUserField()
     category = EnumChoiceField(CategoryEnum)
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = RecommendationList
-        fields = ['recommendations', 'user', 'is_draft', 'photo', 'category', 'header']
+        fields = ['recommendations', 'tags', 'user', 'is_draft', 'photo', 'category', 'header']
 
     def create(self, validated_data):
         recommendations = validated_data.pop('recommendations')
+        tags = validated_data.pop('tags')
         recommendation_list = super().create(validated_data)
         for recommendation in recommendations:
             Recommendation.objects.create(recommendation_list=recommendation_list, **recommendation)
+
+        for tag in tags:
+            if 'id' not in tag:
+                new_tag = Tag.objects.create(**tag)
+            else:
+                new_tag = Tag.objects.get(pk=tag['id'])
+            TagList.objects.create(tag=new_tag, recommendation_list=recommendation_list)
         return recommendation_list
 
 

@@ -13,3 +13,10 @@ class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
     class Meta:
         model = RecommendationList
         fields = ['category', 'user_id', 'is_draft', 'header']
+
+
+class CustomTagFilter(django_filters.FilterSet):
+
+    class Meta:
+        model = Tag
+        fields = ['tag_name']
