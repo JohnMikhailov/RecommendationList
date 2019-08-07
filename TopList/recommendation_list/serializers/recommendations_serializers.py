@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from recommendation_list.models.recommendations import RecommendationList, Favorites, Recommendation, CategoryEnum
-from recommendation_list.models.tags import Tag, TagList
-from recommendation_list.serializers.tags_serializers import TagSerializer, TagListSerializer
+from recommendation_list.models.tags import Tag
+from recommendation_list.serializers.tags_serializers import TagSerializer
 from user.serializers import CustomUserSerializer
 from django_enum_choices.serializers import EnumChoiceField
 
@@ -11,8 +11,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recommendation
-        fields = ['text', 'recommendation_list']
-        extra_kwargs = {'recommendation_list': {'required': False}}
+        fields = ['text', 'photo']
 
 
 class RelatedCustomUserField(CustomUserSerializer):
@@ -21,28 +20,28 @@ class RelatedCustomUserField(CustomUserSerializer):
 
 
 class RecommendationListSerializer(serializers.ModelSerializer):
-    recommendations = RecommendationSerializer(many=True)
+    recommendations = RecommendationSerializer(many=True, required=True)
     user = RelatedCustomUserField()
     category = EnumChoiceField(CategoryEnum)
-    tags = TagSerializer(many=True)
+    tags = TagSerializer(many=True, required=False)
 
     class Meta:
         model = RecommendationList
-        fields = ['recommendations', 'tags', 'user', 'is_draft', 'photo', 'category', 'header']
+        fields = ['id', 'recommendations', 'tags', 'user', 'is_draft', 'photo', 'category', 'header']
+        extra_kwargs = {
+            'tags': {'required': False}
+        }
 
     def create(self, validated_data):
         recommendations = validated_data.pop('recommendations')
-        tags = validated_data.pop('tags')
         recommendation_list = super().create(validated_data)
         for recommendation in recommendations:
             Recommendation.objects.create(recommendation_list=recommendation_list, **recommendation)
 
+        tags = validated_data.get('tags', [])
         for tag in tags:
-            if 'id' not in tag:
-                new_tag = Tag.objects.create(**tag)
-            else:
-                new_tag = Tag.objects.get(pk=tag['id'])
-            TagList.objects.create(tag=new_tag, recommendation_list=recommendation_list)
+            new_tag, created = Tag.objects.get_or_create(tag_name=tag['tag_name'])
+            recommendation_list.tags.add(new_tag)
         return recommendation_list
 
 

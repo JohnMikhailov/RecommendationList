@@ -1,11 +1,12 @@
 from django.urls import reverse
-from django_enum_choices.fields import EnumChoiceField
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from authentication.utils import create_token
 from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation
 from user.models import CustomUser
+
+from unittest.mock import patch
 
 
 class RecommendationListTest(APITestCase):
@@ -64,7 +65,7 @@ class RecommendationListTest(APITestCase):
             'category': 'music',
             'header': 'header'
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_creating_a_new_recommendation_list_invalid_category(self):
@@ -156,7 +157,9 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_user_can_change_recommendation_list_photo(self):
+    @patch('django.core.files.storage.FileSystemStorage.save')
+    def test_user_can_change_recommendation_list_photo(self, mock_save):
+        mock_save.return_value = './media/recommendation_list_images/im2.jpg'
         user_id = self.test_user_1.id
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
@@ -168,3 +171,4 @@ class RecommendationListTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.patch(url, data, foramt='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # mock_save.assert_called_once()

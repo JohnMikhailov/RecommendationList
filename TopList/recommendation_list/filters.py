@@ -1,5 +1,5 @@
 import django_filters
-from django_enum_choices.filters import EnumChoiceFilter, EnumChoiceFilterSetMixin
+from django_enum_choices.filters import EnumChoiceFilter
 
 from recommendation_list.models.recommendations import CategoryEnum, RecommendationList
 

@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from recommendation_list.models.recommendations import RecommendationList
 from .models import CustomUser
 
 
@@ -29,7 +28,6 @@ class CustomUserSerializerCreate(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(CustomUserSerializerCreate):
-    # recommendation_lists = serializers.PrimaryKeyRelatedField(many=True, queryset=RecommendationList.objects.all())
 
     class Meta:
         model = CustomUser

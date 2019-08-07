@@ -1,8 +1,11 @@
 from django.db import models
-from user.models import CustomUser
+
+from recommendation_list.models.tags import Tag
 
 from enum import Enum
 from django_enum_choices.fields import EnumChoiceField
+
+from user.models import CustomUser
 
 
 class CategoryEnum(Enum):
@@ -25,11 +28,21 @@ class RecommendationList(models.Model):
 
     category = EnumChoiceField(CategoryEnum)
     header = models.CharField(max_length=500, default='')
+    tags = models.ManyToManyField(Tag)
+
+    users = models.ManyToManyField(CustomUser, through='Favorites', related_name='favorites')
 
 
 class Favorites(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='favorites', on_delete=models.CASCADE)
-    recommendation_list = models.ForeignKey(RecommendationList, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,
+                             on_delete=models.CASCADE,
+                             related_name='favorites_user')
+
+    recommendation_list = models.ForeignKey(RecommendationList,
+                                            on_delete=models.CASCADE,
+                                            related_name='favorites_recommendations')
+
+    title = models.CharField(max_length=100, default='')
 
 
 class Recommendation(models.Model):
@@ -39,4 +52,4 @@ class Recommendation(models.Model):
 
     text = models.CharField(max_length=1000, default='')
 
-    # TODO добавить поле photo
+    photo = models.ImageField(upload_to='recommendation_images', null=True)
