@@ -158,8 +158,7 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @patch('django.core.files.storage.FileSystemStorage.save')
-    def test_user_can_change_recommendation_list_photo(self, mock_save):
-        mock_save.return_value = './media/recommendation_list_images/im2.jpg'
+    def test_user_can_change_recommendation_list_photo(self, mock):
         user_id = self.test_user_1.id
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
@@ -169,6 +168,36 @@ class RecommendationListTest(APITestCase):
             'photo': im
         }
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
-        response = self.client.patch(url, data, foramt='multipart')
+        response = self.client.patch(url, data=data, foramt='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # mock_save.assert_called_once()
+
+    def test_tags_adding_or_updating(self):
+        user_id = self.test_user_1.id
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id})
+        access_token = create_token({'id': user_id,
+                                     'email': 'emial@mail.com'}, 'access')
+        data = {
+            'tags': [
+                {'name': 'test1'},
+                {'name': 'test2'}
+            ]
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.patch(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @patch('django.core.files.storage.FileSystemStorage.save')
+    def test_adding_photos_to_recommendations(self, mock):
+        mock.return_value = 'im2.jpg'
+        user_id = self.test_user_1.id
+        url = reverse('recommendation_detailing-detail', kwargs={'recommendation_list_pk': self.recommendation_list_1.id,
+                                                                 'pk': self.recommendation_1.id})
+        access_token = create_token({'id': user_id,
+                                     'email': 'emial@mail.com'}, 'access')
+        im = open('./media/recommendation_list_images/im2.jpg', 'rb')
+        data = {
+            'photo': im
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.patch(url, data=data, foramt='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

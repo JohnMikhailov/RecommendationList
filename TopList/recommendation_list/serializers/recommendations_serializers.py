@@ -11,7 +11,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recommendation
-        fields = ['text', 'photo']
+        fields = ['id', 'text', 'photo']
 
 
 class RelatedCustomUserField(CustomUserSerializer):
@@ -34,15 +34,24 @@ class RecommendationListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         recommendations = validated_data.pop('recommendations')
+        tags = validated_data.pop('tags', [])
         recommendation_list = super().create(validated_data)
         for recommendation in recommendations:
             Recommendation.objects.create(recommendation_list=recommendation_list, **recommendation)
 
-        tags = validated_data.get('tags', [])
         for tag in tags:
-            new_tag, created = Tag.objects.get_or_create(tag_name=tag['tag_name'])
+            new_tag, created = Tag.objects.get_or_create(name=tag['name'])
             recommendation_list.tags.add(new_tag)
         return recommendation_list
+
+    def update(self, instance, validated_data):
+        if 'tags' in validated_data:
+            tags = validated_data.pop('tags')
+            instance.tags.clear()
+            for tag in tags:
+                new_tag, created = Tag.objects.get_or_create(name=tag['name'])
+                instance.tags.add(new_tag)
+        return super().update(instance, validated_data)
 
 
 class FavoritesSerializer(serializers.ModelSerializer):
