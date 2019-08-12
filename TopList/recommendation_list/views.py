@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -28,6 +28,15 @@ class RecommendationListViewSet(ModelViewSet):
     def categories(self, request):
         return Response([elem.value for elem in CategoryEnum])
 
+    @action(methods=['post'], detail=True, permission_classes=[IsAuthenticated])
+    def favorites(self, request, pk=None):
+        request.data['user'] = request.user
+        request.data['recommendation_list'] = self.queryset.get(pk=pk)
+        serializer = FavoritesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class RecommendationViewSet(ModelViewSet):
     serializer_class = RecommendationSerializer
@@ -46,3 +55,4 @@ class TagViewSet(ModelViewSet):
 class FavoritesViewSet(ModelViewSet):
     queryset = Favorites.objects.all()
     serializer_class = FavoritesSerializer
+    permission_classes = [AllowAny]

@@ -42,6 +42,7 @@ class RecommendationListSerializer(serializers.ModelSerializer):
         for tag in tags:
             new_tag, created = Tag.objects.get_or_create(name=tag['name'])
             recommendation_list.tags.add(new_tag)
+
         return recommendation_list
 
     def update(self, instance, validated_data):
@@ -55,9 +56,15 @@ class RecommendationListSerializer(serializers.ModelSerializer):
 
 
 class FavoritesSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(many=True)
-    recommendation_list = RecommendationListSerializer(many=True)
+    user = CustomUserSerializer(required=True)
+    recommendation_list = RecommendationListSerializer(required=True)
 
     class Meta:
         model = Favorites
         fields = '__all__'
+
+    def create(self, validated_data):
+        current_list = validated_data['recommendation_list_id']
+        user = validated_data['user_id']
+        favorites = super().create(validated_data)
+        return favorites
