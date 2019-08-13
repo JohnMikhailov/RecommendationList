@@ -55,16 +55,22 @@ class RecommendationListSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class FavoritesSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(required=True)
-    recommendation_list = RecommendationListSerializer(required=True)
+class FavoritesCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Favorites
+        fields = '__all__'
+
+
+class FavoritesListSerializer(serializers.ModelSerializer):
+    recommendation_list = RecommendationListSerializer()
 
     class Meta:
         model = Favorites
         fields = '__all__'
 
     def create(self, validated_data):
-        current_list = validated_data['recommendation_list_id']
-        user = validated_data['user_id']
-        favorites = super().create(validated_data)
-        return favorites
+        raise NotImplemented
+
+    def update(self, instance, validated_data):
+        raise NotImplemented

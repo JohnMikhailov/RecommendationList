@@ -1,4 +1,5 @@
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from user.models import CustomUser
@@ -11,3 +12,8 @@ class UserViewSet(ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     http_method_names = ['get', 'patch', 'head', 'options']
+
+    @action(methods=['GET'], detail=True, permission_classes=[IsAuthenticated])
+    def favorites(self, request, pk=None):
+        # TODO: ...
+        pass

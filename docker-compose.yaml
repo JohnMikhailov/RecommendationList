@@ -8,7 +8,6 @@ services:
     depends_on:
       - postgres
 
-
   postgres:
     image: "postgres:10-alpine"
     ports:

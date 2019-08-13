@@ -29,8 +29,12 @@ class RecommendationList(models.Model):
     category = EnumChoiceField(CategoryEnum)
     header = models.CharField(max_length=500, default='')
     tags = models.ManyToManyField(Tag)
+    description = models.CharField(max_length=200, default='')
 
     users = models.ManyToManyField(CustomUser, through='Favorites', related_name='favorites')
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
 
 class Favorites(models.Model):
@@ -42,7 +46,7 @@ class Favorites(models.Model):
                                             on_delete=models.CASCADE,
                                             related_name='favorites_recommendations')
 
-    title = models.CharField(max_length=100, default='')
+    created = models.DateTimeField(auto_now_add=True)
 
 
 class Recommendation(models.Model):

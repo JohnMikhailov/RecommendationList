@@ -9,7 +9,7 @@ from recommendation_list.models.recommendations import RecommendationList, Favor
 from recommendation_list.models.tags import Tag
 from recommendation_list.permissions import IsOwnerOrReadOnly, IsOwnerOrReadOnlyRecommendation
 from recommendation_list.serializers.recommendations_serializers import RecommendationListSerializer, \
-    FavoritesSerializer, RecommendationSerializer
+    FavoritesCreateSerializer, RecommendationSerializer
 from recommendation_list.serializers.tags_serializers import TagSerializer
 
 
@@ -28,11 +28,11 @@ class RecommendationListViewSet(ModelViewSet):
     def categories(self, request):
         return Response([elem.value for elem in CategoryEnum])
 
-    @action(methods=['post'], detail=True, permission_classes=[IsAuthenticated])
+    @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def favorites(self, request, pk=None):
-        request.data['user'] = request.user
-        request.data['recommendation_list'] = self.queryset.get(pk=pk)
-        serializer = FavoritesSerializer(data=request.data)
+        request.data['user'] = request.user.id
+        request.data['recommendation_list'] = pk
+        serializer = FavoritesCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -54,5 +54,5 @@ class TagViewSet(ModelViewSet):
 
 class FavoritesViewSet(ModelViewSet):
     queryset = Favorites.objects.all()
-    serializer_class = FavoritesSerializer
+    serializer_class = FavoritesCreateSerializer
     permission_classes = [AllowAny]
