@@ -7,6 +7,8 @@ from django_enum_choices.fields import EnumChoiceField
 
 from user.models import CustomUser
 
+from django.contrib.postgres.fields import ArrayField
+
 
 class CategoryEnum(Enum):
     MOVIES = 'movies'

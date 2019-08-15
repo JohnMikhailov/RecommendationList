@@ -1,16 +1,17 @@
 import django_filters
+from django.contrib.postgres.aggregates import ArrayAgg
 from django_enum_choices.filters import EnumChoiceFilter
 
 from recommendation_list.models.recommendations import CategoryEnum, RecommendationList
-from recommendation_list.models.tags import Tag
 
 
 class TagsFilter(django_filters.CharFilter):
 
     def filter(self, qs, value):
-        if value:
-            tags = [tag.strip() for tag in value.split(',')]
-            qs = qs.filter(tags__name__in=tags)
+        if not value:
+            return qs
+        input_tags = [tag.strip() for tag in value.split(',')]
+        qs = qs.annotate(tags_name=ArrayAgg('tags__name')).filter(tags_name__contains=input_tags)
         return qs
 
 
