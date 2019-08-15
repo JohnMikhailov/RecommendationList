@@ -7,8 +7,6 @@ from django_enum_choices.fields import EnumChoiceField
 
 from user.models import CustomUser
 
-from django.contrib.postgres.fields import ArrayField
-
 
 class CategoryEnum(Enum):
     MOVIES = 'movies'
@@ -30,8 +28,9 @@ class RecommendationList(models.Model):
 
     category = EnumChoiceField(CategoryEnum)
     header = models.CharField(max_length=500, default='')
-    tags = models.ManyToManyField(Tag)
     description = models.CharField(max_length=200, default='')
+    title = models.CharField(max_length=200, default='')
+    tags = models.ManyToManyField(Tag)
 
     users = models.ManyToManyField(CustomUser, through='Favorites', related_name='favorites')
 

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from recommendation_list.models.recommendations import RecommendationList, Favorites, Recommendation, CategoryEnum
 from recommendation_list.models.tags import Tag
@@ -60,6 +61,12 @@ class FavoritesCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorites
         fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorites.objects.all(),
+                fields=['recommendation_list', 'user']
+            )
+        ]
 
 
 class FavoritesListSerializer(serializers.ModelSerializer):
@@ -74,3 +81,4 @@ class FavoritesListSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         raise NotImplemented
+
