@@ -1,16 +1,15 @@
 from django.db import transaction
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from recommendation_list.filters import CustomRecommendationListFieldsFilter
-from recommendation_list.models.recommendations import RecommendationList, Favorites, CategoryEnum, Recommendation
-from recommendation_list.models.tags import Tag
+from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation
 from recommendation_list.permissions import IsOwnerOrReadOnly, IsOwnerOrReadOnlyRecommendation
 from recommendation_list.serializers.recommendations_serializers import RecommendationListSerializer, \
-    FavoritesCreateSerializer, RecommendationSerializer
-from recommendation_list.serializers.tags_serializers import TagSerializer
+    FavoritesCreateSerializer, RecommendationSerializer, LikesSerializer
+from user.serializers import CustomUserSerializer
 
 
 class RecommendationListViewSet(ModelViewSet):
@@ -37,6 +36,22 @@ class RecommendationListViewSet(ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
+    @action(methods=['POST'], detail=True)
+    def like(self, request, pk=None):
+        request.data['user'] = request.user.id
+        request.data['recommendation_list'] = pk
+        serializer = LikesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @action(detail=True)
+    def likes(self, request, pk=None):
+        recommendation_list = self.queryset.get(id=pk)
+        users = recommendation_list.likes.all()
+        serializer = CustomUserSerializer(users, many=True)
+        return Response(serializer.data)
+
 
 class RecommendationViewSet(ModelViewSet):
     serializer_class = RecommendationSerializer
@@ -44,15 +59,3 @@ class RecommendationViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Recommendation.objects.filter(recommendation_list_id=self.kwargs['recommendation_list_pk'])
-
-
-class TagViewSet(ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class FavoritesViewSet(ModelViewSet):
-    queryset = Favorites.objects.all()
-    serializer_class = FavoritesCreateSerializer
-    permission_classes = [AllowAny]

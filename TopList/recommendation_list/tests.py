@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -201,3 +202,13 @@ class RecommendationListTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.patch(url, data=data, foramt='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_filtering_by_searched_text_valid_category_name(self):
+        url = reverse('recommendation_list-list')
+        text = 'text'
+        response = self.client.get(url, {'search': text}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), RecommendationList.objects.filter(Q(header__icontains=text)
+                               | Q(title__icontains=text)
+                               | Q(description__icontains=text)
+                               | Q(recommendations__text__icontains=text)).count())

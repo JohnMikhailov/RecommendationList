@@ -37,6 +37,8 @@ class RecommendationList(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    likes = models.ManyToManyField(CustomUser, through='Likes', related_name='likes')
+
 
 class Favorites(models.Model):
     user = models.ForeignKey(CustomUser,
@@ -48,6 +50,15 @@ class Favorites(models.Model):
                                             related_name='favorites_recommendations')
 
     created = models.DateTimeField(auto_now_add=True)
+
+
+class Likes(models.Model):
+    user = models.ForeignKey(CustomUser,
+                             on_delete=models.CASCADE,
+                             related_name='likes_user')
+    recommendation_list = models.ForeignKey(RecommendationList,
+                                            on_delete=models.CASCADE,
+                                            related_name='likes_recommendations')
 
 
 class Recommendation(models.Model):

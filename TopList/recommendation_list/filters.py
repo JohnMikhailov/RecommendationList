@@ -1,8 +1,9 @@
 import django_filters
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Q
 from django_enum_choices.filters import EnumChoiceFilter
 
-from recommendation_list.models.recommendations import CategoryEnum, RecommendationList, Favorites
+from recommendation_list.models.recommendations import CategoryEnum, RecommendationList
 
 
 class TagsFilter(django_filters.CharFilter):
@@ -18,9 +19,14 @@ class TagsFilter(django_filters.CharFilter):
 class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
     category = EnumChoiceFilter(CategoryEnum)
     tags = TagsFilter(field_name='tags')
-    header = django_filters.CharFilter(field_name='header', lookup_expr='icontains')
-    title = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
-    description = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
+
+    search = django_filters.CharFilter(method='common_filter')
+
+    def common_filter(self, queryset, name, value):
+        return queryset.filter(Q(header__icontains=value)
+                               | Q(title__icontains=value)
+                               | Q(description__icontains=value)
+                               | Q(recommendations__text__icontains=value))
 
     order = django_filters.OrderingFilter(
         fields=(
@@ -30,17 +36,4 @@ class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
 
     class Meta:
         model = RecommendationList
-        fields = ['category', 'user_id', 'is_draft', 'header', 'title', 'description', 'tags', 'updated']
-
-
-class CustomUserFavoritesFilter(django_filters.FilterSet):
-
-    o = django_filters.OrderingFilter(
-        fields=(
-            ('created', 'create')
-        )
-    )
-
-    class Meta:
-        model = RecommendationList
-        fields = ['created']
+        fields = ['category', 'user_id', 'header', 'title', 'description', 'tags', 'updated']
