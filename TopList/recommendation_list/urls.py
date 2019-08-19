@@ -11,7 +11,6 @@ router.register('recommendations', RecommendationListViewSet, basename='recommen
 recommendation_router = routers.NestedSimpleRouter(router, 'recommendations', lookup='recommendation_list')
 recommendation_router.register('tips', RecommendationViewSet, basename='recommendation_detailing')
 
-
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(recommendation_router.urls))

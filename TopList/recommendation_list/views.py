@@ -17,6 +17,12 @@ class RecommendationListViewSet(ModelViewSet):
     serializer_class = RecommendationListSerializer
     permission_classes = [IsOwnerOrReadOnly]
     filterset_class = CustomRecommendationListFieldsFilter
+    use_pagination = False
+
+    def paginate_queryset(self, queryset):
+        if not self.use_pagination:
+            return None
+        return super().paginate_queryset(queryset)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

@@ -4,7 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from authentication.utils import create_token
-from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation
+from recommendation_list.filters import TagsFilter
+from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation, Favorites
+from recommendation_list.models.tags import Tag
 from user.models import CustomUser
 
 from unittest.mock import patch
@@ -14,6 +16,10 @@ class RecommendationListTest(APITestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        tag1 = Tag.objects.create(name='test_tag1')
+        tag2 = Tag.objects.create(name='test_tag1')
+        tag3 = Tag.objects.create(name='test_tag3')
+
         self.test_user_1 = CustomUser.objects.create(username='username1',
                                                      password='password',
                                                      email='email@mail.com',
@@ -32,15 +38,18 @@ class RecommendationListTest(APITestCase):
                                                                        header='header')
 
         self.recommendation_1 = Recommendation.objects.create(recommendation_list=self.recommendation_list_1,
-                                                              text='text')
+                                                              text='recommendation_text1')
+        self.recommendation_list_1.tags.add(tag1)
 
         self.recommendation_list_2 = RecommendationList.objects.create(user=self.test_user_1,
-                                                                       is_draft=False,
+                                                                       is_draft=True,
                                                                        category=CategoryEnum.BOOKS,
                                                                        header='header')
 
         self.recommendation_2 = Recommendation.objects.create(recommendation_list=self.recommendation_list_2,
-                                                              text='text')
+                                                              text='recommendation_text2')
+        self.recommendation_list_2.tags.add(tag2)
+        self.recommendation_list_2.tags.add(tag3)
 
     def test_getting_category_list(self):
         url = reverse('recommendation_list-categories')
@@ -203,12 +212,99 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data, foramt='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_filtering_by_searched_text_valid_category_name(self):
+    def test_filtering_by_searched_text(self):
         url = reverse('recommendation_list-list')
         text = 'text'
         response = self.client.get(url, {'search': text}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), RecommendationList.objects.filter(Q(header__icontains=text)
-                               | Q(title__icontains=text)
-                               | Q(description__icontains=text)
-                               | Q(recommendations__text__icontains=text)).count())
+                                                                               | Q(title__icontains=text)
+                                                                               | Q(description__icontains=text)
+                                                                               | Q(recommendations__text__icontains=text)).count())
+
+    def test_searching_by_tags(self):
+        url = reverse('recommendation_list-list')
+        response = self.client.get(url, {'tags': ['test_tag1', 'test_tag3']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), TagsFilter().filter(RecommendationList.objects.all(), 'test_tag1,test_tag3').count())
+
+    def test_searching_by_text_in_recommendations(self):
+        url = reverse('recommendation_list-list')
+        text = 'recommendation_text1'
+        response = self.client.get(url, {'search': text}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), RecommendationList.objects.filter(recommendations__text__icontains=text).count())
+
+    def test_adding_to_favorites(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        count = Favorites.objects.all().count()
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(count + 1, Favorites.objects.all().count())
+
+    def test_adding_to_favorites_unauthorized(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(Favorites.objects.all().count(), 0)
+
+    def test_adding_to_favorites_twice(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        count = Favorites.objects.all().count()
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(count + 1, Favorites.objects.all().count())
+
+    def test_like(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        count = self.recommendation_list_1.likes.count()
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(count + 1, self.recommendation_list_1.likes.count())
+
+    def test_like_unauthorized(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        count = self.recommendation_list_1.likes.count()
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(count + 1, self.recommendation_list_1.likes.count())
+
+    def test_like_twice(self):
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(1, self.recommendation_list_1.likes.count())
+
+    def test_get_user_profile_me(self):
+        url = reverse('users-detail', kwargs={'pk': 'me'})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['user_id'], self.test_user_1.id)
+
+    def test_get_drafts_me(self):
+        url = reverse('users-detail', kwargs={'pk': 'me'}) + 'drafts/'
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), self.test_user_1.lists.filter(is_draft=True).count())
