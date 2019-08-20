@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from TopList.custom_mixins.pagination import PaginationMixin
 from recommendation_list.filters import CustomRecommendationListFieldsFilter
 from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation
 from recommendation_list.permissions import IsOwnerOrReadOnly, IsOwnerOrReadOnlyRecommendation
@@ -12,17 +13,12 @@ from recommendation_list.serializers.recommendations_serializers import Recommen
 from user.serializers import CustomUserSerializer
 
 
-class RecommendationListViewSet(ModelViewSet):
+class RecommendationListViewSet(PaginationMixin, ModelViewSet):
+    # queryset = RecommendationList.objects.filter(is_draft=False)
     queryset = RecommendationList.objects.all()
     serializer_class = RecommendationListSerializer
     permission_classes = [IsOwnerOrReadOnly]
     filterset_class = CustomRecommendationListFieldsFilter
-    use_pagination = False
-
-    def paginate_queryset(self, queryset):
-        if not self.use_pagination:
-            return None
-        return super().paginate_queryset(queryset)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):

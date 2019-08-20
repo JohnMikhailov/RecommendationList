@@ -31,7 +31,7 @@ class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
 
     order = django_filters.OrderingFilter(
         fields=(
-            ('updated', 'update')
+            ('updated', 'updated')
         )
     )
 

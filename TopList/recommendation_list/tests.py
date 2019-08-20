@@ -51,6 +51,7 @@ class RecommendationListTest(APITestCase):
         self.recommendation_list_2.tags.add(tag2)
         self.recommendation_list_2.tags.add(tag3)
 
+
     def test_getting_category_list(self):
         url = reverse('recommendation_list-categories')
         response = self.client.get(url)
@@ -224,9 +225,9 @@ class RecommendationListTest(APITestCase):
 
     def test_searching_by_tags(self):
         url = reverse('recommendation_list-list')
-        response = self.client.get(url, {'tags': ['test_tag1', 'test_tag3']}, format='json')
+        response = self.client.get(url, {'tags': ['test_tag1']}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), TagsFilter().filter(RecommendationList.objects.all(), 'test_tag1,test_tag3').count())
+        self.assertEqual(len(response.data), TagsFilter().filter(RecommendationList.objects.all(), 'test_tag1').count())
 
     def test_searching_by_text_in_recommendations(self):
         url = reverse('recommendation_list-list')
@@ -236,7 +237,7 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(len(response.data), RecommendationList.objects.filter(recommendations__text__icontains=text).count())
 
     def test_adding_to_favorites(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        url = reverse('recommendation_list-favorites', kwargs={'pk': self.recommendation_list_1.id})
         count = Favorites.objects.all().count()
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
@@ -246,13 +247,13 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(count + 1, Favorites.objects.all().count())
 
     def test_adding_to_favorites_unauthorized(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        url = reverse('recommendation_list-favorites', kwargs={'pk': self.recommendation_list_1.id})
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Favorites.objects.all().count(), 0)
 
     def test_adding_to_favorites_twice(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'favorites/'
+        url = reverse('recommendation_list-favorites', kwargs={'pk': self.recommendation_list_1.id})
         count = Favorites.objects.all().count()
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
@@ -264,7 +265,7 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(count + 1, Favorites.objects.all().count())
 
     def test_like(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        url = reverse('recommendation_list-like', kwargs={'pk': self.recommendation_list_1.id})
         count = self.recommendation_list_1.likes.count()
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
@@ -274,7 +275,7 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(count + 1, self.recommendation_list_1.likes.count())
 
     def test_like_unauthorized(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        url = reverse('recommendation_list-like', kwargs={'pk': self.recommendation_list_1.id})
         count = self.recommendation_list_1.likes.count()
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
@@ -284,7 +285,7 @@ class RecommendationListTest(APITestCase):
         self.assertEqual(count + 1, self.recommendation_list_1.likes.count())
 
     def test_like_twice(self):
-        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id}) + 'like/'
+        url = reverse('recommendation_list-like', kwargs={'pk': self.recommendation_list_1.id})
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
@@ -296,15 +297,70 @@ class RecommendationListTest(APITestCase):
 
     def test_get_user_profile_me(self):
         url = reverse('users-detail', kwargs={'pk': 'me'})
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['user_id'], self.test_user_1.id)
+        self.assertEqual(response.data['id'], self.test_user_1.id)
 
     def test_get_drafts_me(self):
-        url = reverse('users-detail', kwargs={'pk': 'me'}) + 'drafts/'
+        url = reverse('users-drafts', kwargs={'pk': 'me'})
         access_token = create_token({'id': self.test_user_1.id,
                                      'email': 'emial@mail.com'}, 'access')
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), self.test_user_1.lists.filter(is_draft=True).count())
+
+    def test_sorting_by_adding_to_favorites_date_asc(self):
+        url = reverse('users-favorites', kwargs={'pk': self.test_user_2.id})
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        Favorites.objects.create(user_id=self.test_user_2.id,
+                                 recommendation_list_id=self.recommendation_list_1.id)
+        Favorites.objects.create(user_id=self.test_user_2.id,
+                                 recommendation_list_id=self.recommendation_list_2.id)
+        response = self.client.get(url, {'order': 'create'}, format='json')
+        ordered_by_date = [i['id'] for i in response.data]
+        expected_order = [self.recommendation_list_1.id, self.recommendation_list_2.id]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ordered_by_date, expected_order)
+
+    def test_sorting_by_adding_to_favorites_date_desc(self):
+        url = reverse('users-favorites', kwargs={'pk': self.test_user_2.id})
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        Favorites.objects.create(user_id=self.test_user_2.id,
+                                 recommendation_list_id=self.recommendation_list_1.id)
+        Favorites.objects.create(user_id=self.test_user_2.id,
+                                 recommendation_list_id=self.recommendation_list_2.id)
+        response = self.client.get(url, {'order': '-create'}, format='json')
+        ordered_by_date = [i['id'] for i in response.data]
+        expected_order = [self.recommendation_list_2.id, self.recommendation_list_1.id]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ordered_by_date, expected_order)
+
+    def test_soring_by_update_date_asc(self):
+        url = reverse('recommendation_list-list')
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.get(url, {'order': 'updated'}, format='json')
+        ordered_by_update = [i['id'] for i in response.data]
+        expected_order = [self.recommendation_list_1.id, self.recommendation_list_2.id]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ordered_by_update, expected_order)
+
+    def test_soring_by_update_date_desc(self):
+        url = reverse('recommendation_list-list')
+        access_token = create_token({'id': self.test_user_1.id,
+                                     'email': 'emial@mail.com'}, 'access')
+        self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
+        response = self.client.get(url, {'order': '-updated'}, format='json')
+        ordered_by_update = [i['id'] for i in response.data]
+        expected_order = [self.recommendation_list_2.id, self.recommendation_list_1.id]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ordered_by_update, expected_order)
