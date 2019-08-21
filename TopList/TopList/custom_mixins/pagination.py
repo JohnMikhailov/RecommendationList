@@ -1,5 +1,5 @@
 class PaginationMixin:
-    use_pagination = False
+    use_pagination = True
 
     def paginate_queryset(self, queryset):
         if not self.use_pagination:

@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'user',
     'authentication',
     'recommendation_list',
-    'minio_storage'
 ]
 
 MIDDLEWARE = [
@@ -107,15 +106,15 @@ REST_FRAMEWORK = {
 #     }
 # }
 
-JWT_ACCESS_TTL = 10 * 60 * 6 * 12
-JWT_REFRESH_TTL = 14 * 24 * 60 * 60
+JWT_ACCESS_TTL = int(os.getenv('JWT_ACCESS_TTL'))
+JWT_REFRESH_TTL = int(os.getenv('JWT_REFRESH_TTL'))
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('ENGINE'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('PASSWORD'),
@@ -167,15 +166,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_ROOT = './static_files/'
-#
-# DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
-# STATICFILES_STORAGE = "minio_storage.storage.MinioStaticStorage"
-# MINIO_STORAGE_ENDPOINT = 'minio:9000'
-# MINIO_STORAGE_ACCESS_KEY = os.getenv('MINIO_STORAGE_ACCESS_KEY')
-# MINIO_STORAGE_SECRET_KEY = os.getenv('MINIO_STORAGE_SECRET_KEY')
-# MINIO_STORAGE_USE_HTTPS = False
-# MINIO_STORAGE_MEDIA_BUCKET_NAME = 'local-media'
-# MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
 
-# MINIO_STORAGE_STATIC_BUCKET_NAME = 'local-static'
-# MINIO_STORAGE_AUTO_CREATE_STATIC_BUCKET = True
+DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
+MINIO_STORAGE_ENDPOINT = 'storage:9000'
+MINIO_STORAGE_ACCESS_KEY = os.getenv('MINIO_STORAGE_ACCESS_KEY')
+MINIO_STORAGE_SECRET_KEY = os.getenv('MINIO_STORAGE_SECRET_KEY')
+MINIO_STORAGE_USE_HTTPS = False
+MINIO_STORAGE_MEDIA_BUCKET_NAME = 'local-media'
+MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True

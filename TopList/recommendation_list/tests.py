@@ -113,7 +113,7 @@ class RecommendationListTest(APITestCase):
         url = reverse('recommendation_list-list')
         response = self.client.get(url, {'user_id': self.test_user_1.id}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), RecommendationList.objects.filter(user_id=self.test_user_1.id).count())
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(user_id=self.test_user_1.id).count())
 
         self.recommendation_list = RecommendationList.objects.create(user=self.test_user_1,
                                                                      is_draft=False,
@@ -125,13 +125,13 @@ class RecommendationListTest(APITestCase):
 
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), RecommendationList.objects.count())
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.count())
 
     def test_filtering_by_category_valid_category_name(self):
         url = reverse('recommendation_list-list')
         response = self.client.get(url, {'category': 'music'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), RecommendationList.objects.filter(category=CategoryEnum.MUSIC).count())
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(category=CategoryEnum.MUSIC).count())
 
     def test_filtering_by_category_invalid_category_name(self):
         url = reverse('recommendation_list-list')
@@ -218,7 +218,7 @@ class RecommendationListTest(APITestCase):
         text = 'text'
         response = self.client.get(url, {'search': text}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), RecommendationList.objects.filter(Q(header__icontains=text)
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(Q(header__icontains=text)
                                                                                | Q(title__icontains=text)
                                                                                | Q(description__icontains=text)
                                                                                | Q(recommendations__text__icontains=text)).count())
@@ -227,14 +227,14 @@ class RecommendationListTest(APITestCase):
         url = reverse('recommendation_list-list')
         response = self.client.get(url, {'tags': ['test_tag1']}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), TagsFilter().filter(RecommendationList.objects.all(), 'test_tag1').count())
+        self.assertEqual(len(response.data['results']), TagsFilter().filter(RecommendationList.objects.all(), 'test_tag1').count())
 
     def test_searching_by_text_in_recommendations(self):
         url = reverse('recommendation_list-list')
         text = 'recommendation_text1'
         response = self.client.get(url, {'search': text}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), RecommendationList.objects.filter(recommendations__text__icontains=text).count())
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(recommendations__text__icontains=text).count())
 
     def test_adding_to_favorites(self):
         url = reverse('recommendation_list-favorites', kwargs={'pk': self.recommendation_list_1.id})
@@ -349,7 +349,7 @@ class RecommendationListTest(APITestCase):
                                      'email': 'emial@mail.com'}, 'access')
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.get(url, {'order': 'updated'}, format='json')
-        ordered_by_update = [i['id'] for i in response.data]
+        ordered_by_update = [i['id'] for i in response.data['results']]
         expected_order = [self.recommendation_list_1.id, self.recommendation_list_2.id]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ordered_by_update, expected_order)
@@ -360,7 +360,7 @@ class RecommendationListTest(APITestCase):
                                      'email': 'emial@mail.com'}, 'access')
         self.client.credentials(HTTP_AUTHORIZATION='jwt ' + access_token)
         response = self.client.get(url, {'order': '-updated'}, format='json')
-        ordered_by_update = [i['id'] for i in response.data]
+        ordered_by_update = [i['id'] for i in response.data['results']]
         expected_order = [self.recommendation_list_2.id, self.recommendation_list_1.id]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ordered_by_update, expected_order)

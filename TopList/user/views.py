@@ -37,12 +37,10 @@ class UserViewSet(PaginationMixin, ModelViewSet):
             self.kwargs['pk'] = request.user.id
         return super().retrieve(request, *args, **kwargs)
 
-    @action(methods=['GET'], detail=True, permission_classes=[IsOwner], url_name='drafts')
+    @action(methods=['GET'], detail=True, permission_classes=[IsOwner])
     def drafts(self, request, *args, **kwargs):
         if not(kwargs['pk'] == 'me' or kwargs['pk'].isdigit()):
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if kwargs['pk'].isdigit() and int(kwargs['pk']) != request.user.id:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         self.kwargs['pk'] = request.user.id
         drafts = request.user.lists.filter(is_draft=True)
         page = self.paginate_queryset(drafts)

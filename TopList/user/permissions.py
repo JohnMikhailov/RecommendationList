@@ -10,7 +10,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 class IsOwner(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated
+        return view.kwargs['pk'].isdigit() and request.user.id == int(view.kwargs['pk'])
 
-    def has_object_permission(self, request, view, user):
-        return user == request.user
+    def has_object_permission(self, request, view, obj):
+        return obj == request.user

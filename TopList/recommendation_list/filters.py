@@ -26,8 +26,7 @@ class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
         return queryset.filter(Q(header__icontains=value)
                                | Q(title__icontains=value)
                                | Q(description__icontains=value)
-                               | Q(recommendations__text__icontains=value)
-                               | Q(is_draft=False))
+                               | Q(recommendations__text__icontains=value))
 
     order = django_filters.OrderingFilter(
         fields=(

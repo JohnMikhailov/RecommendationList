@@ -51,8 +51,9 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refresh(request):
-    credentials = request.data
-    refresh_token_credentials = credentials.get('refresh_token', None)
+    refresh_token_credentials = request.query_params.get('refresh_token', None)
+    # credentials = request.data
+    # refresh_token_credentials = credentials.get('refresh_token', None)
     if not refresh_token_credentials:
         raise AuthenticationFailed("Invalid token name. 'refresh_token' - required")
     try:
