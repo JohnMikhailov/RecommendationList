@@ -1,8 +1,10 @@
+import boto3
 from django.db.models import Q
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from TopList import settings
 from authentication.utils import create_token
 from recommendation_list.filters import TagsFilter
 from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation, Favorites
@@ -11,6 +13,7 @@ from user.models import CustomUser
 
 from unittest.mock import patch
 
+from moto import mock_s3
 
 class RecommendationListTest(APITestCase):
 
@@ -197,9 +200,11 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @patch('django.core.files.storage.FileSystemStorage.save')
-    def test_adding_photos_to_recommendations(self, mock):
-        mock.return_value = 'im2.jpg'
+    # @patch('django.core.files.storage.FileSystemStorage.save')
+    # @mock_s3
+    # @patch('storages.backends.s3boto3.S3Boto3Storage') ?
+    def test_adding_photos_to_recommendations(self):
+        # mock.return_value = 'im2.jpg'
         user_id = self.test_user_1.id
         url = reverse('recommendation_detailing-detail', kwargs={'recommendation_list_pk': self.recommendation_list_1.id,
                                                                  'pk': self.recommendation_1.id})

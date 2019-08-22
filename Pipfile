@@ -49,6 +49,9 @@ drf-nested-routers = "==0.91"
 packaging = "*"
 django-minio-storage = "*"
 python-dotenv = "*"
+boto3 = "*"
+django-storages = "*"
+moto = "*"
 
 [requires]
 python_version = "3.6"
