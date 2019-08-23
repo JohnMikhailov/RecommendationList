@@ -14,8 +14,7 @@ from user.serializers import CustomUserSerializer
 
 
 class RecommendationListViewSet(PaginationMixin, ModelViewSet):
-    # queryset = RecommendationList.objects.filter(is_draft=False)
-    queryset = RecommendationList.objects.all()
+    queryset = RecommendationList.objects.filter(is_draft=False)
     serializer_class = RecommendationListSerializer
     permission_classes = [IsOwnerOrReadOnly]
     filterset_class = CustomRecommendationListFieldsFilter
