@@ -15,6 +15,7 @@ from unittest.mock import patch
 
 from moto import mock_s3
 
+
 class RecommendationListTest(APITestCase):
 
     def setUp(self) -> None:
@@ -53,7 +54,6 @@ class RecommendationListTest(APITestCase):
                                                               text='recommendation_text2')
         self.recommendation_list_2.tags.add(tag2)
         self.recommendation_list_2.tags.add(tag3)
-
 
     def test_getting_category_list(self):
         url = reverse('recommendation_list-categories')
@@ -171,8 +171,7 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    @patch('django.core.files.storage.FileSystemStorage.save')
-    def test_user_can_change_recommendation_list_photo(self, mock):
+    def test_user_can_change_recommendation_list_photo(self):
         user_id = self.test_user_1.id
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
@@ -200,11 +199,8 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # @patch('django.core.files.storage.FileSystemStorage.save')
     # @mock_s3
-    # @patch('storages.backends.s3boto3.S3Boto3Storage') ?
     def test_adding_photos_to_recommendations(self):
-        # mock.return_value = 'im2.jpg'
         user_id = self.test_user_1.id
         url = reverse('recommendation_detailing-detail', kwargs={'recommendation_list_pk': self.recommendation_list_1.id,
                                                                  'pk': self.recommendation_1.id})
