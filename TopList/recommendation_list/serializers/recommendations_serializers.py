@@ -54,6 +54,10 @@ class RecommendationListSerializer(serializers.ModelSerializer):
             for tag in tags:
                 new_tag, created = Tag.objects.get_or_create(name=tag['name'])
                 instance.tags.add(new_tag)
+        if 'recommendations' in validated_data:
+            recommendations = validated_data.pop('recommendations')
+            for recommendation in recommendations:
+                Recommendation.objects.create(recommendation_list=instance, **recommendation)
         return super().update(instance, validated_data)
 
 
