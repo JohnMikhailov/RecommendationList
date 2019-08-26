@@ -1,0 +1,95 @@
+stages:
+    - build_ci
+    - lint
+    - test
+    - build
+
+services:
+    - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_DRIVER: overlay2
+
+  CI_DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}/ci
+  IMAGE: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}
+
+
+.bulid_job_common: &bulid_job_common
+  image: docker:stable
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    # Not fail in case if the image does not exist
+    - docker pull ${CI_DOCKER_IMAGE} || true
+    - docker pull ${IMAGE} || true
+    # Build image from cache
+    - docker build --cache-from ${IMAGE} --cache-from ${CI_DOCKER_IMAGE} -t ${IMAGE} -f ${DOCKERFILE} .
+    # Push maing image to registry
+    - docker push ${IMAGE}
+  tags:
+    - kube
+
+build:ci:
+  <<: *bulid_job_common
+  stage: build_ci
+  variables:
+    DOCKERFILE: 'DockerfileCI'
+  before_script:
+    - export IMAGE=${CI_DOCKER_IMAGE}
+  only:
+    - master
+    - develop
+    - merge_requests
+
+
+lint:flake8:
+    stage: lint
+    image: python:3.6-alpine
+    script:
+    - pip3 install --no-cache-dir flake8
+    - flake8 .
+    only:
+    - master
+    - develop
+    - merge_requests
+    tags:
+    - kube
+
+test:run:
+  stage: test
+  image: ${CI_DOCKER_IMAGE}
+  services:
+    - name: postgres:11-alpine
+      alias: db
+  variables:
+    POSTGRES_DB: ios_build_storage_db
+    POSTGRES_USER: iliya
+    POSTGRES_USERNAME: iliya
+    POSTGRES_PASSWORD: 4815162342
+    DB_HOST: localhost
+    DJANGO_USE_S3_STORAGE: "false"
+    DB_USER: iliya
+    DB_PASSWORD: 4815162342
+    DB_NAME: ios_build_storage_db
+    DB_PORT: 5432
+    SECRET_KEY: sa3k4)!^zacve5h)%1m2d#4tx#+foswm&000r$jemku6*i!$#f
+  script:
+    - sh test.sh
+  only:
+    - master
+    - develop
+    - merge_requests
+  tags:
+    - kube
+
+build:test:
+  <<: *bulid_job_common
+  stage: build
+  variables:
+    DOCKERFILE: 'Dockerfile'
+  before_script:
+    - export IMAGE=${IMAGE}
+  only:
+    - master
+    - develop
+    - merge_requests
