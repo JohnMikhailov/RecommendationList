@@ -78,20 +78,6 @@ class FavoritesCreateSerializer(serializers.ModelSerializer):
         ]
 
 
-class FavoritesListSerializer(serializers.ModelSerializer):
-    recommendation_list = RecommendationListSerializer()
-
-    class Meta:
-        model = Favorites
-        fields = '__all__'
-
-    def create(self, validated_data):
-        raise NotImplemented
-
-    def update(self, instance, validated_data):
-        raise NotImplemented
-
-
 class LikesSerializer(serializers.ModelSerializer):
 
     class Meta:

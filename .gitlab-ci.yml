@@ -62,17 +62,17 @@ test:run:
     - name: postgres:11-alpine
       alias: db
   variables:
-    POSTGRES_DB: ios_build_storage_db
-    POSTGRES_USER: iliya
-    POSTGRES_USERNAME: iliya
-    POSTGRES_PASSWORD: 4815162342
+    POSTGRES_DB: recommendationlist
+    POSTGRES_USER: ivan
+    POSTGRES_USERNAME: ivan
+    POSTGRES_PASSWORD: password
     DB_HOST: localhost
     DJANGO_USE_S3_STORAGE: "false"
-    DB_USER: iliya
-    DB_PASSWORD: 4815162342
-    DB_NAME: ios_build_storage_db
+    DB_USER: ivan
+    DB_PASSWORD: password
+    DB_NAME: recommendationlist
     DB_PORT: 5432
-    SECRET_KEY: sa3k4)!^zacve5h)%1m2d#4tx#+foswm&000r$jemku6*i!$#f
+    SECRET_KEY: SECRET_KEY
   script:
     - sh test.sh
   only:
