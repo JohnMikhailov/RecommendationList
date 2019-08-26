@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from TopList import settings
 from authentication.utils import create_token
-from user.serializers import CustomUserSerializer
+from user.serializers import CustomUserSerializerCreate
 from user.models import CustomUser
 from authentication.serializers import AuthorizationSerializer
 
@@ -16,7 +16,7 @@ from authentication.serializers import AuthorizationSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def registration(request):
-    user_serializer = CustomUserSerializer(data=request.data)
+    user_serializer = CustomUserSerializerCreate(data=request.data)
     user_serializer.is_valid(raise_exception=True)
     user_serializer.save()
     return Response(user_serializer.data)
@@ -51,6 +51,7 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refresh(request):
+    # refresh_token_credentials = request.query_params.get('refresh_token', None)
     credentials = request.data
     refresh_token_credentials = credentials.get('refresh_token', None)
     if not refresh_token_credentials:

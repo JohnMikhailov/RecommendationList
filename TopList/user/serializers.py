@@ -1,8 +1,9 @@
 from rest_framework import serializers
+
 from .models import CustomUser
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CustomUserSerializerCreate(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128,
         min_length=8,
@@ -26,12 +27,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
                         'avatar': {'required': False}}
 
 
-class CustomUserSerializerUpdate(CustomUserSerializer):
+class CustomUserSerializer(CustomUserSerializerCreate):
 
     class Meta:
         model = CustomUser
-        fields = CustomUserSerializer.Meta.fields
-        read_only_fields = CustomUserSerializer.Meta.read_only_fields + ('email',)
+        fields = CustomUserSerializerCreate.Meta.fields
+        read_only_fields = CustomUserSerializerCreate.Meta.read_only_fields + ('email',)
         extra_kwargs = {'username': {'required': True},
                         'first_name': {'required': True},
                         'last_name': {'required': True},

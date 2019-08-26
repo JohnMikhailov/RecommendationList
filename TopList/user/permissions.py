@@ -1,10 +1,13 @@
 from rest_framework import permissions
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
+class IsMeOrReadOnly(permissions.BasePermission):
 
-    def has_object_permission(self, request, view, obj):
-        # if request.method in permissions.SAFE_METHODS:
-        #     return True
-        # return obj == request.user
-        return (request.method in permissions.SAFE_METHODS) or (obj == request.user)
+    def has_object_permission(self, request, view, user):
+        return (request.method in permissions.SAFE_METHODS) or (user == request.user)
+
+
+class IsMe(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return (view.kwargs['pk'].isdigit() and request.user.id == int(view.kwargs['pk'])) or view.kwargs['pk'] == 'me'

@@ -4,17 +4,23 @@ from datetime import timedelta
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+from pathlib import Path
+
+env_path = Path(BASE_DIR).resolve().parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'USELESS_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -28,10 +34,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'django_filters',
+    'drf_yasg',
 
     'user',
     'authentication',
-    'social'
+    'recommendation_list',
 ]
 
 MIDDLEWARE = [
@@ -43,8 +51,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# AUTHENTICATION_BACKEND = ('authentication.backend',)
 
 ROOT_URLCONF = 'TopList.urls'
 
@@ -68,16 +74,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TopList.wsgi.application'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'authentication.backend.JWTAuth',
-    ),
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50
 }
 
-JWT_ACCESS_TTL = 10 * 60 * 6 * 12
-JWT_REFRESH_TTL = 14 * 24 * 60 * 60
+JWT_ACCESS_TTL = int(os.getenv('JWT_ACCESS_TTL'))
+JWT_REFRESH_TTL = int(os.getenv('JWT_REFRESH_TTL'))
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -85,11 +96,11 @@ JWT_REFRESH_TTL = 14 * 24 * 60 * 60
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'toplist_db',
-        'USER': 'toplist_user',
-        'PASSWORD': 'toplist_password',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.getenv('NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('PORT'),
     }
 }
 
@@ -134,3 +145,14 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_ROOT = './static_files/'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = os.getenv('MINIO_STORAGE_ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = os.getenv('MINIO_STORAGE_SECRET_KEY')
+AWS_S3_ENDPOINT_URL = 'http://0.0.0.0:9000'
+AWS_STORAGE_BUCKET_NAME = 'toplist'
+TEST_SERVER_MODE = True
