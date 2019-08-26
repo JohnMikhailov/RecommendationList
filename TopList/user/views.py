@@ -9,7 +9,7 @@ from TopList.custom_mixins.pagination import PaginationMixin
 from recommendation_list.serializers.recommendations_serializers import RecommendationListSerializer
 from user.models import CustomUser
 from user.serializers import CustomUserSerializer
-from user.permissions import IsOwnerOrReadOnly, IsOwner
+from user.permissions import IsOwnerOrReadOnly, IsOwnerIdOrMe
 
 
 class UserViewSet(PaginationMixin, ModelViewSet):
@@ -37,15 +37,13 @@ class UserViewSet(PaginationMixin, ModelViewSet):
             self.kwargs['pk'] = request.user.id
         return super().retrieve(request, *args, **kwargs)
 
-    @action(methods=['GET'], detail=True, permission_classes=[IsOwner])
+    @action(methods=['GET'], detail=True, permission_classes=[IsOwnerIdOrMe])
     def drafts(self, request, *args, **kwargs):
         if not(kwargs['pk'] == 'me' or kwargs['pk'].isdigit()):
             return Response(status=status.HTTP_404_NOT_FOUND)
         self.kwargs['pk'] = request.user.id
         drafts = request.user.lists.filter(is_draft=True)
         page = self.paginate_queryset(drafts)
-        if page:
-            serializer = RecommendationListSerializer(page, many=True)
-        else:
-            serializer = RecommendationListSerializer(drafts, many=True)
+        serializer = RecommendationListSerializer(page, many=True) if page \
+            else RecommendationListSerializer(drafts, many=True)
         return Response(serializer.data)

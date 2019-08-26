@@ -46,7 +46,7 @@ class RecommendationListTest(APITestCase):
         self.recommendation_list_1.tags.add(tag1)
 
         self.recommendation_list_2 = RecommendationList.objects.create(user=self.test_user_1,
-                                                                       is_draft=True,
+                                                                       is_draft=False,
                                                                        category=CategoryEnum.BOOKS,
                                                                        header='header')
 

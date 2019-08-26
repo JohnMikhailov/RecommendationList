@@ -30,8 +30,10 @@ class RecommendationListViewSet(PaginationMixin, ModelViewSet):
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def favorites(self, request, pk=None):
-        request.data['user'] = request.user.id
-        request.data['recommendation_list'] = pk
+        user = request.user.id
+        recommendation_list = pk
+        request.data['user'] = user
+        request.data['recommendation_list'] = recommendation_list
         serializer = FavoritesCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
