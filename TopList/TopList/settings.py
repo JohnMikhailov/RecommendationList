@@ -86,8 +86,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50
 }
 
-JWT_ACCESS_TTL = os.getenv('JWT_ACCESS_TTL')
-JWT_REFRESH_TTL = os.getenv('JWT_REFRESH_TTL')
+JWT_ACCESS_TTL = int(os.getenv('JWT_ACCESS_TTL'))
+JWT_REFRESH_TTL = int(os.getenv('JWT_REFRESH_TTL'))
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
