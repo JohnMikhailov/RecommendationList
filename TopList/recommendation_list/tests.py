@@ -167,7 +167,7 @@ class RecommendationListTest(APITestCase):
 
     def test_user_can_change_recommendation_list_photo(self):
         user_id = self.test_user_1.id
-        url = reverse('users-detail', kwargs={'pk': user_id})
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
         im = open('./media/recommendation_list_images/im2.jpg', 'rb')
