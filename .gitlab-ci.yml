@@ -68,10 +68,11 @@ test:run:
     POSTGRES_PASSWORD: password
     DB_HOST: localhost
     DJANGO_USE_S3_STORAGE: "false"
+
     DB_USER: ivan
-    DB_PASSWORD: password
-    DB_NAME: recommendationlist
-    DB_PORT: 5432
+    PASSWORD: password
+    NAME: recommendationlist
+    PORT: 5432
     SECRET_KEY: SECRET_KEY
     JWT_ACCESS_TTL: 43200
     JWT_REFRESH_TTL: 1209600
