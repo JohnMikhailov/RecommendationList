@@ -73,6 +73,7 @@ test:run:
     PASSWORD: password
     NAME: recommendationlist
     PORT: 5432
+    HOST: localhost
     SECRET_KEY: SECRET_KEY
     JWT_ACCESS_TTL: 43200
     JWT_REFRESH_TTL: 1209600
