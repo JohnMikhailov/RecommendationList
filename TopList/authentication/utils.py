@@ -6,7 +6,7 @@ from TopList import settings
 
 
 def create_token(payload, token_type, ttl=None):
-    if token_type is 'refresh':
+    if token_type == 'refresh':
         ttl_ = ttl or settings.JWT_REFRESH_TTL
     else:
         ttl_ = ttl or settings.JWT_ACCESS_TTL

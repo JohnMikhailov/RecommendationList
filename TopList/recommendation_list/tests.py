@@ -219,10 +219,11 @@ class RecommendationListTest(APITestCase):
         text = 'text'
         response = self.client.get(url, {'search': text}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(Q(header__icontains=text)
-                                                                               | Q(title__icontains=text)
-                                                                               | Q(description__icontains=text)
-                                                                               | Q(recommendations__text__icontains=text)).count())
+        q = Q(header__icontains=text)\
+            | Q(title__icontains=text)\
+            | Q(description__icontains=text)\
+            | Q(recommendations__text__icontains=text)
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(q).count())
 
     def test_searching_by_tags(self):
         url = reverse('recommendation_list-list')
