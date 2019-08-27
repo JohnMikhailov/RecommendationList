@@ -147,11 +147,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_ROOT = './static_files/'
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_STORAGE_BUCKET_NAME = 'toplist'
 
 if os.getenv('USE_MINIO', False):
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_STORAGE_BUCKET_NAME = 'toplist'
     AWS_ACCESS_KEY_ID = os.getenv('MINIO_STORAGE_ACCESS_KEY')
     AWS_SECRET_ACCESS_KEY = os.getenv('MINIO_STORAGE_SECRET_KEY')
     AWS_S3_ENDPOINT_URL = 'http://0.0.0.0:9000'
