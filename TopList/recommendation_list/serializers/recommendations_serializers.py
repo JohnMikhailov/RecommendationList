@@ -38,13 +38,14 @@ class RecommendationListSerializer(serializers.ModelSerializer):
         recommendations = validated_data.pop('recommendations')
         tags = validated_data.pop('tags', [])
         recommendation_list = super().create(validated_data)
+        recs = []
         for recommendation in recommendations:
-            Recommendation.objects.create(recommendation_list=recommendation_list, **recommendation)
-
+            recommendation['recommendation_list'] = recommendation_list
+            recs.append(Recommendation(**recommendation))
+        Recommendation.objects.bulk_create(recs)
         for tag in tags:
             new_tag, created = Tag.objects.get_or_create(name=tag['name'])
             recommendation_list.tags.add(new_tag)
-
         return recommendation_list
 
     def update(self, instance, validated_data):
@@ -56,8 +57,11 @@ class RecommendationListSerializer(serializers.ModelSerializer):
                 instance.tags.add(new_tag)
         if 'recommendations' in validated_data:
             recommendations = validated_data.pop('recommendations')
+            recs = []
             for recommendation in recommendations:
-                Recommendation.objects.create(recommendation_list=instance, **recommendation)
+                recommendation['recommendation_list'] = instance
+                recs.append(Recommendation(**recommendation))
+            Recommendation.objects.bulk_create(recs)
         return super().update(instance, validated_data)
 
 
@@ -72,20 +76,6 @@ class FavoritesCreateSerializer(serializers.ModelSerializer):
                 fields=['recommendation_list', 'user']
             )
         ]
-
-
-class FavoritesListSerializer(serializers.ModelSerializer):
-    recommendation_list = RecommendationListSerializer()
-
-    class Meta:
-        model = Favorites
-        fields = '__all__'
-
-    def create(self, validated_data):
-        raise NotImplemented
-
-    def update(self, instance, validated_data):
-        raise NotImplemented
 
 
 class LikesSerializer(serializers.ModelSerializer):

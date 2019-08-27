@@ -23,10 +23,11 @@ class CustomRecommendationListFieldsFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method='common_filter')
 
     def common_filter(self, queryset, name, value):
-        return queryset.filter(Q(header__icontains=value)
-                               | Q(title__icontains=value)
-                               | Q(description__icontains=value)
-                               | Q(recommendations__text__icontains=value))
+        q = Q(header__icontains=value) \
+            | Q(title__icontains=value) \
+            | Q(description__icontains=value)\
+            | Q(recommendations__text__icontains=value)
+        return queryset.filter(q)
 
     order = django_filters.OrderingFilter(
         fields=(

@@ -27,7 +27,7 @@ class UserViewSet(PaginationMixin, ModelViewSet):
         ordering_field = request.query_params.get('order', '')
         if ordering_field in ('create', '-create'):
             order = '-' if ordering_field[0] == '-' else ''
-            queryset = queryset.order_by(order+'favorites_recommendations__created')
+            queryset = queryset.order_by(order + 'favorites_recommendations__created')
 
         serializer = RecommendationListSerializer(queryset, many=True)
         return Response(serializer.data)

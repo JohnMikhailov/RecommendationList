@@ -1,19 +1,13 @@
-import boto3
 from django.db.models import Q
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from TopList import settings
 from authentication.utils import create_token
 from recommendation_list.filters import TagsFilter
 from recommendation_list.models.recommendations import RecommendationList, CategoryEnum, Recommendation, Favorites
 from recommendation_list.models.tags import Tag
 from user.models import CustomUser
-
-from unittest.mock import patch
-
-from moto import mock_s3
 
 
 class RecommendationListTest(APITestCase):
@@ -173,7 +167,7 @@ class RecommendationListTest(APITestCase):
 
     def test_user_can_change_recommendation_list_photo(self):
         user_id = self.test_user_1.id
-        url = reverse('users-detail', kwargs={'pk': user_id})
+        url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
         im = open('./media/recommendation_list_images/im2.jpg', 'rb')
@@ -199,7 +193,6 @@ class RecommendationListTest(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @mock_s3
     def test_adding_photos_to_recommendations(self):
         user_id = self.test_user_1.id
         url = reverse('recommendation_detailing-detail', kwargs={'recommendation_list_pk': self.recommendation_list_1.id,
@@ -219,10 +212,11 @@ class RecommendationListTest(APITestCase):
         text = 'text'
         response = self.client.get(url, {'search': text}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(Q(header__icontains=text)
-                                                                               | Q(title__icontains=text)
-                                                                               | Q(description__icontains=text)
-                                                                               | Q(recommendations__text__icontains=text)).count())
+        q = Q(header__icontains=text)\
+            | Q(title__icontains=text)\
+            | Q(description__icontains=text)\
+            | Q(recommendations__text__icontains=text)
+        self.assertEqual(len(response.data['results']), RecommendationList.objects.filter(q).count())
 
     def test_searching_by_tags(self):
         url = reverse('recommendation_list-list')
