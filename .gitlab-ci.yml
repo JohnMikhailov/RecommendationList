@@ -73,6 +73,8 @@ test:run:
     DB_NAME: recommendationlist
     DB_PORT: 5432
     SECRET_KEY: SECRET_KEY
+    JWT_ACCESS_TTL: 43200
+    JWT_REFRESH_TTL: 1209600
   script:
     - sh test.sh
   only:
