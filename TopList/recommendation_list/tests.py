@@ -170,7 +170,7 @@ class RecommendationListTest(APITestCase):
         url = reverse('recommendation_list-detail', kwargs={'pk': self.recommendation_list_1.id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
-        im = open('./media/recommendation_list_images/im2.jpg', 'rb')
+        im = open('./test_media/recommendation_list_images/im2.jpg', 'rb')
         data = {
             'photo': im
         }
@@ -199,7 +199,7 @@ class RecommendationListTest(APITestCase):
                                                                  'pk': self.recommendation_1.id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
-        im = open('./media/recommendation_list_images/im2.jpg', 'rb')
+        im = open('./test_media/recommendation_list_images/im2.jpg', 'rb')
         data = {
             'photo': im
         }

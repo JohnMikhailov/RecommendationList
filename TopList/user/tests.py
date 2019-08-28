@@ -102,7 +102,7 @@ class CustomUserTest(APITestCase):
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
-        im = open('./media/avatars/im2.jpg', 'rb')
+        im = open('./test_media/avatars/im2.jpg', 'rb')
         data = {
             'avatar': im
         }
@@ -115,7 +115,7 @@ class CustomUserTest(APITestCase):
         url = reverse('users-detail', kwargs={'pk': user_id})
         access_token = create_token({'id': user_id,
                                      'email': 'emial@mail.com'}, 'access')
-        im = open('./media/avatars/false.rtf', 'rb')
+        im = open('./test_media/avatars/false.rtf', 'rb')
         data = {
             'avatar': im
         }
