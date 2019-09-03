@@ -1,0 +1,705 @@
+swagger: '2.0'
+info:
+  title: RecommendationList API
+  description: Test description
+  termsOfService: https://www.google.com/policies/terms/
+  license:
+    name: BSD License
+  version: v1
+host: 192.168.11.53:8000
+schemes:
+  - http
+basePath: /api
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  Basic:
+    type: basic
+security:
+  - Basic: []
+paths:
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LogIn'
+      responses:
+        '201':
+          description: ''
+      tags:
+        - auth
+    parameters: []
+  /auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          schema:
+            type: object
+            properties:
+              access_token:
+                type: string
+              refresh_token:
+                type: string
+            
+      responses:
+        '201':
+          description: ''
+      tags:
+        - auth
+    parameters: []
+  /auth/registration/:
+    post:
+      operationId: auth_registration_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CustomUser'
+      responses:
+        '201':
+          description: ''
+      tags:
+        - auth
+    parameters: []
+  /recommendations/:
+    get:
+      operationId: recommendations_list
+      description: 'Получение всех списков рекомендаций, у которых is_draft=False (НЕ черновиков)'
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/RecommendationList'
+      tags:
+        - recommendations
+    post:
+      operationId: recommendations_create
+      description: 'Добавление нового списка рекомендаций'
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RecommendationListRequest'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecommendationList'
+      tags:
+        - recommendations
+    parameters: []
+  /recommendations/categories/:
+    get:
+      operationId: recommendations_categories
+      description: 'Получение всех категорий'
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: object
+            properties:
+              MUSIC:
+                type: string
+              MOVIES:
+                type: string
+              BOOKS:
+                type: string
+              RELAX:
+                type: string
+              KNOWLEDGE:
+                type: string
+              GAMES:
+                type: string
+              FREE:
+                type: string
+      tags:
+        - recommendations
+    parameters: []
+  /recommendations/{id}/:
+    get:
+      operationId: recommendations_read
+      description: 'Получение конкретного списка рекомендаций по id'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecommendationList'
+      tags:
+        - recommendations
+    patch:
+      operationId: recommendations_partial_update
+      description: 'Изменение списка рекомендаций'
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RecommendationListRequest'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecommendationList'
+      tags:
+        - recommendations
+    delete:
+      operationId: recommendations_delete
+      description: 'Удаление списка по id'
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - recommendations
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this recommendation list.
+        required: true
+        type: integer
+  /recommendations/{id}/favorites/:
+    post:
+      operationId: recommendations_favorites
+      description: 'Добавление списка рекомндаций в избранное'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Favorites'
+      tags:
+        - recommendations
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this recommendation list.
+        required: true
+        type: integer
+  /recommendations/{id}/like/:
+    post:
+      operationId: recommendations_like
+      description: 'Поставить лайк списку рекомендаций'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Like'
+      tags:
+        - recommendations
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this recommendation list.
+        required: true
+        type: integer
+  /recommendations/{id}/likes/:
+    get:
+      operationId: recommendations_likes
+      description: 'Получить список всех пользователей, поставивших лайк списку с указанным id'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CustomUser'
+      tags:
+        - recommendations
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this recommendation list.
+        required: true
+        type: integer
+  /recommendations/{recommendation_list_pk}/tips/:
+    get:
+      operationId: recommendations_tips_list
+      description: 'Получение всех рекомендаций списка с указанным id'
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Recommendation'
+      tags:
+        - recommendations
+    parameters:
+      - name: recommendation_list_pk
+        in: path
+        required: true
+        type: string
+  /recommendations/{recommendation_list_pk}/tips/{id}/:
+    get:
+      operationId: recommendations_tips_read
+      description: 'Получение рекомендации по указанному id'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Recommendation'
+      tags:
+        - recommendations
+    patch:
+      operationId: recommendations_tips_partial_update
+      description: 'Изменение текста рекомендации с указанным id'
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Recommendation'
+        - name: photo
+          type: string
+          in: header
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Recommendation'
+      tags:
+        - recommendations
+    delete:
+      operationId: recommendations_tips_delete
+      description: 'Удаление указанной рекомендации из списка'
+      responses:
+        '204':
+          description: ''
+      tags:
+        - recommendations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - name: recommendation_list_pk
+        in: path
+        required: true
+        type: string
+  /users/:
+    get:
+      operationId: users_list
+      description: 'Получение всех пользователей'
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/CustomUser'
+      tags:
+        - users
+    parameters: []
+  /users/{id}/:
+    get:
+      operationId: users_read
+      description: 'Получение пользователя с указанным id'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CustomUser'
+      tags:
+        - users
+    patch:
+      operationId: users_partial_update
+      description: 'Изменение данных пользователя'
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CustomUser'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CustomUser'
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this user.
+        required: true
+        type: integer
+  /users/{id}/drafts/:
+    get:
+      operationId: users_drafts
+      description: 'Получение черновиков пользователя. Можно получить только собственные черновики, черновики других пользвоателей смотерть нельзя'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecommendationListDraft'
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this user.
+        required: true
+        type: integer
+  /users/{id}/favorites/:
+    get:
+      operationId: users_favorites
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecommendationList'
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this user.
+        required: true
+        type: integer
+definitions:
+  Recommendation:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      text:
+        title: Text
+        type: string
+        maxLength: 1000
+        minLength: 1
+      photo:
+        title: Photo
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+  Tag:
+    type: object
+    properties:
+      name:
+        title: Name
+        type: string
+        maxLength: 500
+        minLength: 1
+  RelatedCustomUserField:
+    title: User
+    required:
+      - first_name
+      - last_name
+      - username
+      - password
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      email:
+        title: Email address
+        type: string
+        format: email
+        readOnly: true
+        minLength: 1
+      first_name:
+        title: First name
+        type: string
+        maxLength: 30
+      last_name:
+        title: Last name
+        type: string
+        maxLength: 150
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 8
+      is_active:
+        title: Active
+        description: Designates whether this user should be treated as active. Unselect
+          this instead of deleting accounts.
+        type: boolean
+      avatar:
+        title: Avatar
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+  RecommendationList:
+    required:
+      - recommendations
+      - user
+      - category
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      recommendations:
+        type: array
+        items:
+          $ref: '#/definitions/Recommendation'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      user:
+        $ref: '#/definitions/RelatedCustomUserField'
+      is_draft:
+        title: Is draft
+        type: boolean
+        default: false
+      photo:
+        title: Photo
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+      category:
+        title: Category
+        type: string
+      header:
+        title: Header
+        type: string
+        maxLength: 500
+        minLength: 1
+  CustomUser:
+    required:
+      - first_name
+      - last_name
+      - username
+      - password
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      email:
+        title: Email address
+        type: string
+        format: email
+        readOnly: true
+        minLength: 1
+      first_name:
+        title: First name
+        type: string
+        maxLength: 30
+      last_name:
+        title: Last name
+        type: string
+        maxLength: 150
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 8
+      is_active:
+        title: Active
+        description: Designates whether this user should be treated as active. Unselect
+          this instead of deleting accounts.
+        type: boolean
+      avatar:
+        title: Avatar
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+  LogIn:
+    type: object
+    properties:
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 8
+  RecommendationListRequest:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      recommendations:
+        type: array
+        items:
+          $ref: '#/definitions/Recommendation'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      is_draft:
+        title: Is draft
+        type: boolean
+        default: false
+      photo:
+        title: Photo
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+      category:
+        title: Category
+        type: string
+      header:
+        title: Header
+        type: string
+        maxLength: 500
+        minLength: 1
+  Favorites:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      recommendation_list_id:
+        title: ID
+        type: integer
+        readOnly: true
+      user_id:
+        title: ID
+        type: integer
+        readOnly: true
+  Like:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      recommendation_list_id:
+        title: ID
+        type: integer
+        readOnly: true
+      user_id:
+        title: ID
+        type: integer
+        readOnly: true
+  RecommendationListDraft:
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      recommendations:
+        type: array
+        items:
+          $ref: '#/definitions/Recommendation'
+      user:
+        type: array
+        items:
+          $ref: '#/definitions/CustomUser'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      is_draft:
+        title: Is draft
+        type: boolean
+        default: true
+      photo:
+        title: Photo
+        type: string
+        readOnly: true
+        x-nullable: true
+        format: uri
+      category:
+        title: Category
+        type: string
+      header:
+        title: Header
+        type: string
+        maxLength: 500
+        minLength: 1
