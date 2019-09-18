@@ -1,1 +1,1 @@
-Recommendation list project
+RESTful API project
